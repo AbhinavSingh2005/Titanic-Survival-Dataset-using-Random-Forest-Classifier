@@ -1,0 +1,145 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+print("Libraries import successful")
+
+# load the dataset 
+data = pd.read_csv ("Titanic_dataset.csv")
+print("Data loaded successfully")
+
+# create dataframe 
+df = pd.DataFrame(data)
+df
+
+# separate the input features and the target 
+X = df.drop(["Survived","Name"], axis = 1)
+X
+
+y = df["Survived"]
+y
+
+# create label encoder
+le = LabelEncoder()
+
+X_encoded = df.copy()
+
+# Store encoders for future use
+encoders = {}
+
+# Convert all string columns to numeric
+for col in X_encoded.columns:
+    if X_encoded[col].dtype == 'object':
+        le = LabelEncoder()
+        X_encoded[col] = le.fit_transform(X_encoded[col].astype(str))
+        encoders[col] = le
+
+print(X_encoded.head())
+
+X_encoded = X_encoded.drop("Survived", axis=1)
+X_encoded
+
+# separating data from training and testing 
+X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size = 0.2, random_state = 42)
+
+# creating the model 
+model = RandomForestClassifier (n_estimators = 100, random_state = 42)
+print("Model creation successful")
+
+# training the model 
+model.fit (X_train, y_train)
+
+# predicting values 
+y_pred = model.predict (X_test)
+
+accuracy = accuracy_score (y_test, y_pred)
+print("Accuracy is: ", accuracy)
+
+print(confusion_matrix(y_test, y_pred))
+
+print(classification_report(y_test, y_pred))
+
+
+importance = pd.DataFrame({
+    'Feature': X_train.columns,
+    'Importance': model.feature_importances_
+})
+
+importance = importance.sort_values(
+    by='Importance',
+    ascending=False
+)
+
+plt.figure(figsize=(10,6))
+plt.barh(
+    importance['Feature'],
+    importance['Importance']
+)
+
+plt.xlabel("Importance")
+plt.ylabel("Features")
+plt.title("Feature Importance")
+plt.gca().invert_yaxis()
+plt.show()
+
+np.random.seed(42)
+
+names = [
+    "John Smith", "Mary Johnson", "James Brown", "Patricia Davis",
+    "Robert Wilson", "Jennifer Moore", "Michael Taylor", "Linda Anderson"
+]
+
+sexes = ["male", "female"]
+embarked_ports = ["S", "C", "Q"]
+
+data = {
+    "PassengerId": range(1, 51),
+    "Survived": np.random.randint(0, 2, 50),
+    "Pclass": np.random.randint(1, 4, 50),
+    "Name": np.random.choice(names, 50),
+    "Sex": np.random.choice(sexes, 50),
+    "Age": np.random.randint(1, 80, 50),
+    "SibSp": np.random.randint(0, 5, 50),
+    "Parch": np.random.randint(0, 4, 50),
+    "Ticket": [f"TKT{1000+i}" for i in range(50)],
+    "Fare": np.round(np.random.uniform(5, 100, 50), 2),
+    "Cabin": [f"C{i}" for i in range(1, 51)],
+    "Embarked": np.random.choice(embarked_ports, 50)
+}
+
+df_sample = pd.DataFrame(data)
+
+print(df_sample)
+
+y_sample = df_sample["Survived"]
+y_sample# Create a copy of the dataset
+X_sample_encoded = X_sample.copy()
+
+# Store encoders for future use
+encoders = {}
+
+# Convert all string columns to numeric
+for col in X_sample_encoded.columns:
+    if X_sample_encoded[col].dtype == 'object':
+        le = LabelEncoder()
+        X_sample_encoded[col] = le.fit_transform(X_sample_encoded[col].astype(str))
+        encoders[col] = le
+
+print(X_sample_encoded.head())
+
+X_sample_encoded
+
+y_pred_sample = model.predict(X_sample_encoded)
+
+accuracy_sample = accuracy_score (y_sample, y_pred_sample)
+print("Accuracy on test data is:", accuracy_sample)
+
+
+print(confusion_matrix(y_sample, y_pred_sample))
+
+print(classification_report(y_sample, y_pred_sample))
+
